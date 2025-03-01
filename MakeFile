@@ -1,0 +1,46 @@
+# "mingw32-make -f MakeFile" - to compile
+# "mingw32-make -f MakeFile clean" - to clean build files
+
+# Compiler and flags
+CC = gcc
+CFLAGS = -Wall -I./common
+
+# Directories
+CLIENT_DIR = client
+SERVER_DIR = server
+COMMON_DIR = common
+
+# Source files
+CLIENT_SRC = $(CLIENT_DIR)/client.c $(CLIENT_DIR)/client_functions.c $(COMMON_DIR)/common.c
+SERVER_SRC = $(SERVER_DIR)/server.c $(SERVER_DIR)/server_functions.c $(COMMON_DIR)/common.c
+
+# Object files
+CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
+SERVER_OBJ = $(SERVER_SRC:.c=.o)
+
+# Executable files
+CLIENT_EXEC = $(CLIENT_DIR)/Client.exe
+SERVER_EXEC = $(SERVER_DIR)/Server.exe
+
+# Default target: Build both client and server
+all: $(CLIENT_EXEC) $(SERVER_EXEC)
+
+# Build client
+$(CLIENT_EXEC): $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ -lws2_32
+
+# Build server
+$(SERVER_EXEC): $(SERVER_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ -lws2_32
+
+# Compile .c files to .o files
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Clean build files
+clean:
+	if exist client\*.o del /Q client\*.o
+	if exist server\*.o del /Q server\*.o
+	if exist common\*.o del /Q common\*.o
+	if exist client\Client.exe del /Q client\Client.exe
+	if exist server\Server.exe del /Q server\Server.exe

@@ -7,6 +7,8 @@
 
 #include "client_functions.h"
 
+#define BUFFER_SIZE 1024
+
 int main() {
 
     WSADATA wsa;
@@ -33,6 +35,14 @@ int main() {
         printf("Connected succesfully\n");
     else
         printf("Failed to connect. Error Code: %d\n", WSAGetLastError());
+
+    char *message = "GET \\ HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
+    send(socketFD, message, strlen(message), 0);
+
+    char buffer[BUFFER_SIZE];
+    recv(socketFD, buffer, BUFFER_SIZE, 0);
+
+    printf("%s\n", buffer);
 
     closesocket(socketFD);
     WSACleanup();

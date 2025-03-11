@@ -1,13 +1,25 @@
+#include <windows.h>
+
 #include "../common/common.h"
 #include "server_functions.h"
 
+struct AcceptedClient 
+{
+    int acceptedSocketFD;
+    struct sockaddr_in address;
+    int error;
+    boolean isAccepted;
+};
+
+unsigned char players = 0;
+unsigned short won_games = 0;
+unsigned short lost_games = 0;
+
+void exchangeDataWithClient(int socketFD);
+void acceptingConnections(int serverSocketFD);
+
 int main() {
     
-    unsigned char players;
-    unsigned short won_games;
-    unsigned short lost_games;
-    init_stats(&players, &won_games, &lost_games);
-
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         printf("Failed to initialize Winsock. Error Code: %d\n", WSAGetLastError());
@@ -25,27 +37,33 @@ int main() {
     if (listenResult == 0) printf("Listening...\n");
     else {printf("Failed to listen. Error Code: %d\n", WSAGetLastError()); return 1;}
 
-    struct sockaddr_in clientAddress;
-    int clientAddressSize = sizeof(clientAddress);
-    int clientSocketFD = accept(serverSocketFD, (struct sockaddr*)&clientAddress, &clientAddressSize);
+    struct AcceptedClient *clientSocket = acceptIncomingConnection(serverSocketFD);
 
-    // char buffer[BUFFER_SIZE];
-    // recv(clientSocketFD, buffer, BUFFER_SIZE, 0);
-    // printf("%s\n", buffer);
-    //while (1) {
-        //if (getchar() == 'q') break;
+    acceptingConnections(serverSocketFD);
 
-        send(clientSocketFD, (const char *)&players, sizeof(players), 0);
-        send(clientSocketFD, (const char *)&won_games, sizeof(won_games), 0);
-        send(clientSocketFD, (const char *)&lost_games, sizeof(lost_games), 0);        
+    exchangeDataWithClient(clientSocket);
 
-        char received_character;
-        recv(clientSocketFD, &received_character, sizeof(received_character), 0);
-        printf("Received character: %c\n", received_character);
-    //}
-
-    closesocket(clientSocketFD);
+    closesocket(clientSocket->acceptedSocketFD);
     closesocket(serverSocketFD);
     WSACleanup();
     return 0;
+}
+
+void acceptingConnections(int serverSocketFD) {
+    HANDLE thread; //TODO multithreading
+
+    struct AcceptedClient *clientSocket = acceptIncomingConnection(serverSocketFD);
+
+}
+
+void exchangeDataWithClient(int socketFD) {
+    while (1) {
+        send(socketFD, (const char *)&players, sizeof(players), 0);
+        send(socketFD, (const char *)&won_games, sizeof(won_games), 0);
+        send(socketFD, (const char *)&lost_games, sizeof(lost_games), 0);  
+
+        char received_character;
+        recv(socketFD, &received_character, sizeof(received_character), 0);
+        printf("Received character: %c\n", received_character);
+    }
 }

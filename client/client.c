@@ -44,10 +44,6 @@ int main() {
         entered_character = getch();
         
         send(serverSocketFD, &entered_character, 1, 0);
-        
-        if (entered_character == 27) 
-            break;
-
     }
 
     // char buffer[BUFFER_SIZE];

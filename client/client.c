@@ -20,7 +20,8 @@ int main() {
         system("pause");
     }
     else {
-        printf("Failed to connect. Error Code: %d\n", WSAGetLastError()); 
+        printf("Failed to connect. Error Code: %d\n", WSAGetLastError());
+        system("pause");
         return 1;
     }
     
@@ -31,24 +32,30 @@ int main() {
 
     while (1) {
         system("cls");
-        
-        recv(serverSocketFD, (char *)&players, sizeof(players), 0);
-        recv(serverSocketFD, (char *)&won_games, sizeof(won_games), 0);
-        recv(serverSocketFD, (char *)&lost_games, sizeof(lost_games), 0);
-        
+
+        int recvResult1 = recv(serverSocketFD, (char *)&players, sizeof(players), 0);
+        int recvResult2 = recv(serverSocketFD, (char *)&won_games, sizeof(won_games), 0);
+        int recvResult3 = recv(serverSocketFD, (char *)&lost_games, sizeof(lost_games), 0);
+    
+        if (recvResult1 <= 0 || recvResult2 <= 0 || recvResult3 <= 0) {
+            printf("Server disconnected.\n");
+            system("pause");
+            break;
+        }
+    
         printf("Players: %d\n", players);
         printf("Won games: %d\n", won_games);
         printf("Lost games: %d\n", lost_games);
-
+    
         printf("Enter a character: ");
         entered_character = getch();
         
-        send(serverSocketFD, &entered_character, 1, 0);
+        if (send(serverSocketFD, &entered_character, 1, 0) == SOCKET_ERROR) {
+            printf("Failed to send data. Server may have disconnected.\n");
+            system("pause");
+            break;
+        }
     }
-
-    // char buffer[BUFFER_SIZE];
-    // recv(serverSocketFD, buffer, BUFFER_SIZE, 0);
-    // printf("%s\n", buffer);
 
     closesocket(serverSocketFD);
     WSACleanup();

@@ -1,6 +1,8 @@
 #include "../common/common.h"
 #include "server_functions.h"
 
+#define MAX_PLAYERS 10 // !Not more than 255!
+
 struct AcceptedClient 
 {
     int acceptedSocketFD;
@@ -9,20 +11,14 @@ struct AcceptedClient
     boolean isAccepted;
 };
 
-struct AcceptedClient acceptedSockets[10] ;
-int acceptedSocketsCount = 0;
+struct AcceptedClient acceptedSockets[MAX_PLAYERS];
 
-void acceptingConnections(int serverSocketFD) {
-    while (1) {
-        struct AcceptedClient* clientSocket = acceptIncomingConnection(serverSocketFD);
-        if (clientSocket == NULL) {
-            continue;
-        }
-        acceptedSockets[acceptedSocketsCount++] = *clientSocket;
+unsigned char acceptedSocketsCount = 0;
+unsigned short won_games = 25;
+unsigned short lost_games = 14;
 
-        CreateThread(NULL, 0, exchangeDataWithClient, clientSocket, 0, NULL);
-    }
-}
+void acceptingConnections(int serverSocketFD);
+DWORD WINAPI gameLoop(LPVOID lpParam);
 
 int main() {
     
@@ -34,18 +30,37 @@ int main() {
 
     int serverSocketFD = createTCPIPv4Socket();
     struct sockaddr_in *serverAddress = createIPv4Adress("", 2000);
-
-    int result = bind(serverSocketFD, (struct sockaddr*)serverAddress, sizeof(*serverAddress));
-    if (result == 0) printf("Bind successful!\n");
-    else {printf("Failed to bind. Error Code: %d\n", WSAGetLastError()); return 1;}
-
-    int listenResult = listen(serverSocketFD, 10);
-    if (listenResult == 0) printf("Listening...\n");
-    else {printf("Failed to listen. Error Code: %d\n", WSAGetLastError()); return 1;}
+    
+    if (!bindAndListen(&serverSocketFD, &serverAddress)) return 1;
 
     acceptingConnections(serverSocketFD);
 
     closesocket(serverSocketFD);
     WSACleanup();
     return 0;
+}
+
+void acceptingConnections(int serverSocketFD) {
+    while (1) {
+        struct AcceptedClient* clientSocket = acceptIncomingConnection(serverSocketFD);
+        if (clientSocket == NULL) continue;
+        
+        acceptedSockets[acceptedSocketsCount++] = *clientSocket;
+        CreateThread(NULL, 0, gameLoop, clientSocket, 0, NULL);
+    }
+}
+
+DWORD WINAPI gameLoop(LPVOID lpParam) {
+    struct AcceptedClient *pSocket = (struct AcceptedClient *)lpParam;
+    //TODO: Select random word
+    boolean isLost = FALSE;
+    boolean isWon = FALSE;
+    char received_character;
+
+    while (1) {
+        if (!sendAndRecv(&pSocket, &isLost, &isWon, &received_character))
+            return 0;
+
+        printf("Received character: %c\n", received_character);
+    }
 }

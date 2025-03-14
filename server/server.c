@@ -3,6 +3,10 @@
 
 #define MAX_PLAYERS 10 // !Not more than 255!
 
+unsigned char acceptedSocketsCount = 0;
+unsigned short won_games = 25;
+unsigned short lost_games = 14;
+
 struct AcceptedClient 
 {
     int acceptedSocketFD;
@@ -12,10 +16,6 @@ struct AcceptedClient
 };
 
 struct AcceptedClient acceptedSockets[MAX_PLAYERS];
-
-unsigned char acceptedSocketsCount = 0;
-unsigned short won_games = 25;
-unsigned short lost_games = 14;
 
 void acceptingConnections(int serverSocketFD);
 DWORD WINAPI gameLoop(LPVOID lpParam);

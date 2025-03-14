@@ -71,7 +71,6 @@ boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *i
         --acceptedSocketsCount;
         return FALSE;
     }
-
     
     int recvResult = recv((*pSocket)->acceptedSocketFD, received_character, sizeof(*received_character), 0);
     

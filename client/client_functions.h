@@ -6,6 +6,8 @@ extern boolean isWon;
 extern unsigned char currently_playing;
 extern unsigned short won_games;
 extern unsigned short lost_games;
+extern unsigned char remaining_hp;
+extern char word[6];
 
 boolean connectAndCheck(int serverSocketFD, struct sockaddr_in *address);
 boolean recvAndCheck(int serverSocketFD);

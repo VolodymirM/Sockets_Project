@@ -7,6 +7,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <stdbool.h>
+#include <string.h>
 
 struct AcceptedClient 
 {
@@ -19,6 +20,12 @@ struct AcceptedClient
 unsigned char acceptedSocketsCount;
 unsigned short won_games;
 unsigned short lost_games;
+
+struct WordElement
+{
+    char character;
+    boolean isGuessed;
+};
 
 boolean bindAndListen(int *serverSocketFD, struct sockaddr_in **serverAddress) {
     int result = bind(*serverSocketFD, (struct sockaddr*)*serverAddress, sizeof(**serverAddress));
@@ -58,20 +65,39 @@ struct AcceptedClient * acceptIncomingConnection(int serverSocketFD) {
     return acceptedClient;
 }
 
-boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *isWon, char *received_character) {
+void wordToString(struct WordElement word[], char *wordString) {
+    for (int i = 0; i < 5; i++) {
+        if (word[i].isGuessed) wordString[i] = word[i].character;
+        else wordString[i] = '_';
+    }
+    wordString[5] = '\0';
+}
+
+boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *isWon, 
+    struct WordElement word[], unsigned char *remaining_hp, char *received_character) {
+
+    char *wordString = malloc(6 * sizeof(char));
+    wordToString(word, wordString);
+    printf("Word: %s\n", wordString);
+        
     if (send((*pSocket)->acceptedSocketFD, (const char *)isLost, sizeof(*isLost), 0) == SOCKET_ERROR ||
-        send((*pSocket)->acceptedSocketFD, (const char *)isWon, sizeof(*isWon), 0) == SOCKET_ERROR ||    
+        send((*pSocket)->acceptedSocketFD, (const char *)isWon, sizeof(*isWon), 0) == SOCKET_ERROR || 
         send((*pSocket)->acceptedSocketFD, (const char *)&acceptedSocketsCount, sizeof(acceptedSocketsCount), 0) == SOCKET_ERROR ||
         send((*pSocket)->acceptedSocketFD, (const char *)&won_games, sizeof(won_games), 0) == SOCKET_ERROR ||
-        send((*pSocket)->acceptedSocketFD, (const char *)&lost_games, sizeof(lost_games), 0) == SOCKET_ERROR)
+        send((*pSocket)->acceptedSocketFD, (const char *)&lost_games, sizeof(lost_games), 0) == SOCKET_ERROR ||
+        send((*pSocket)->acceptedSocketFD, (const char *)wordString, 6 * sizeof(char), 0) == SOCKET_ERROR ||
+        send((*pSocket)->acceptedSocketFD, (const char *)remaining_hp, sizeof(*remaining_hp), 0) == SOCKET_ERROR)
     {
         printf("Client disconnected. Closing socket.\n");
         closesocket((*pSocket)->acceptedSocketFD);
+        free(wordString);
         *pSocket = NULL;
         --acceptedSocketsCount;
         return FALSE;
     }
     
+    free(wordString);
+
     int recvResult = recv((*pSocket)->acceptedSocketFD, received_character, sizeof(*received_character), 0);
     
     if (recvResult <= 0) {

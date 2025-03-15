@@ -3,25 +3,16 @@
 
 #define MAX_PLAYERS 10 // !Not more than 255!
 
-unsigned char acceptedSocketsCount = 0;
 unsigned short won_games = 25;
 unsigned short lost_games = 14;
 
-struct AcceptedClient 
-{
-    int acceptedSocketFD;
-    struct sockaddr_in address;
-    int error;
-    boolean isAccepted;
-};
-
 struct AcceptedClient acceptedSockets[MAX_PLAYERS];
+unsigned char acceptedSocketsCount = 0;
 
 void acceptingConnections(int serverSocketFD);
 DWORD WINAPI gameLoop(LPVOID lpParam);
 
 int main() {
-    
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         printf("Failed to initialize Winsock. Error Code: %d\n", WSAGetLastError());
@@ -53,12 +44,16 @@ void acceptingConnections(int serverSocketFD) {
 DWORD WINAPI gameLoop(LPVOID lpParam) {
     struct AcceptedClient *pSocket = (struct AcceptedClient *)lpParam;
     //TODO: Select random word
+    struct WordElement word[5] = {{'H', FALSE}, {'E', TRUE}, {'L', FALSE}, {'L', FALSE}, {'O', TRUE}};
+
     boolean isLost = FALSE;
     boolean isWon = FALSE;
+    unsigned char remaining_hp = 3;
+    
     char received_character;
 
     while (1) {
-        if (!sendAndRecv(&pSocket, &isLost, &isWon, &received_character))
+        if (!sendAndRecv(&pSocket, &isLost, &isWon, word, &remaining_hp, &received_character))
             return 0;
 
         printf("Received character: %c\n", received_character);

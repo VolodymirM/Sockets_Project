@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Code/C/Sockets_Project/client",
-      "program": "c:/Code/C/Sockets_Project/client/build/Debug/outDebug",
+      "cwd": "c:/Code/C/Sockets_Project/common",
+      "program": "c:/Code/C/Sockets_Project/common/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

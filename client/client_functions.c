@@ -12,6 +12,8 @@ boolean isWon;
 unsigned char currently_playing;
 unsigned short won_games;
 unsigned short lost_games;
+unsigned char remaining_hp;
+char word[6];
 
 boolean connectAndCheck(int serverSocketFD, struct sockaddr_in *address) {
     int result = connect(serverSocketFD, (struct sockaddr *)address, sizeof(*address));
@@ -34,8 +36,11 @@ boolean recvAndCheck(int serverSocketFD) {
     int recvResult3 = recv(serverSocketFD, (char *)&currently_playing, sizeof(currently_playing), 0);
     int recvResult4 = recv(serverSocketFD, (char *)&won_games, sizeof(won_games), 0);
     int recvResult5 = recv(serverSocketFD, (char *)&lost_games, sizeof(lost_games), 0);
+    int recvResult6 = recv(serverSocketFD, (char *)&word, 6 * sizeof(char), 0);
+    int recvResult7 = recv(serverSocketFD, (char *)&remaining_hp, sizeof(remaining_hp), 0);
 
-    if (recvResult1 <= 0 || recvResult2 <= 0 || recvResult3 <= 0 || recvResult4 <= 0 || recvResult5 <= 0) {
+    if (recvResult1 <= 0 || recvResult2 <= 0 || recvResult3 <= 0 || recvResult4 <= 0 
+        || recvResult5 <= 0 || recvResult6 <= 0 || recvResult7 <= 0) {
         printf("Server disconnected.\n");
         system("pause");
         return FALSE;
@@ -60,8 +65,11 @@ void displayStatsAndGetch(char *entered_character) {
     printf("Playing now: %d\n", currently_playing);
     printf("Won games: %d\n", won_games);
     printf("Lost games: %d\n", lost_games);
+    
+    printf("\n%s\n", word);
+    printf("\nAttempts left: %d\n", remaining_hp);
 
-    printf("Enter a character: ");
+    printf("\nEnter a character: ");
     *entered_character = getch();
 }
 

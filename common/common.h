@@ -9,8 +9,6 @@
 #include <string.h>
 #include <malloc.h>
 
-#define BUFFER_SIZE 1024
-
 int createTCPIPv4Socket();
 struct sockaddr_in* createIPv4Adress(char *ip, int port);
 

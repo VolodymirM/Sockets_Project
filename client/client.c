@@ -1,14 +1,15 @@
 #include "../common/common.h"
 #include "client_functions.h"
 
-boolean isLost = FALSE;
-boolean isWon = FALSE;
+boolean isLost;
+boolean isWon;
 unsigned char currently_playing;
 unsigned short won_games;
 unsigned short lost_games;
+unsigned char remaining_hp;
+char word[6];
 
 int main() {
-
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         printf("Failed to initialize Winsock. Error Code: %d\n", WSAGetLastError());
@@ -18,11 +19,9 @@ int main() {
     int serverSocketFD = createTCPIPv4Socket();
     struct sockaddr_in *address = createIPv4Adress("127.0.0.1", 2000);
 
-    if (!connectAndCheck(serverSocketFD, address)) 
-        return 1;
+    if (!connectAndCheck(serverSocketFD, address)) return 1;
     
     char entered_character;
-    
     while (1) {
         if (!recvAndCheck(serverSocketFD))
             break;

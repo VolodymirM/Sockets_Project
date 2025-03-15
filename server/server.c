@@ -42,9 +42,11 @@ void acceptingConnections(int serverSocketFD) {
 }
 
 DWORD WINAPI gameLoop(LPVOID lpParam) {
+    printf("Client connected.\n");
+
     struct AcceptedClient *pSocket = (struct AcceptedClient *)lpParam;
     //TODO: Select random word
-    struct WordElement word[5] = {{'H', FALSE}, {'E', TRUE}, {'L', FALSE}, {'L', FALSE}, {'O', TRUE}};
+    struct WordElement word[5] = {{'H', FALSE}, {'E', FALSE}, {'L', FALSE}, {'L', FALSE}, {'O', FALSE}};
 
     boolean isLost = FALSE;
     boolean isWon = FALSE;
@@ -56,6 +58,7 @@ DWORD WINAPI gameLoop(LPVOID lpParam) {
         if (!sendAndRecv(&pSocket, &isLost, &isWon, word, &remaining_hp, &received_character))
             return 0;
 
-        printf("Received character: %c\n", received_character);
+        checkIfCharacterIsInWord(word, received_character, &remaining_hp);
+        checkIfWonOrLost(word, &isLost, &isWon, &remaining_hp);
     }
 }

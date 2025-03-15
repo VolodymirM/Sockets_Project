@@ -24,5 +24,7 @@ struct AcceptedClient * acceptIncomingConnection(int serverSocketFD);
 void wordToString(struct WordElement word[], char *wordString);
 boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *isWon, 
     struct WordElement word[], unsigned char *remaining_hp, char *received_character);
+void checkIfCharacterIsInWord(struct WordElement word[], char received_character, unsigned char *remaining_hp);
+void checkIfWonOrLost(struct WordElement word[], boolean *isLost, boolean *isWon, unsigned char *remaining_hp);
 
 #endif // SERVER_FUN_LIB

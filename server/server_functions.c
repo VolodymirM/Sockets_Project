@@ -78,7 +78,6 @@ boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *i
 
     char *wordString = malloc(6 * sizeof(char));
     wordToString(word, wordString);
-    printf("Word: %s\n", wordString);
         
     if (send((*pSocket)->acceptedSocketFD, (const char *)isLost, sizeof(*isLost), 0) == SOCKET_ERROR ||
         send((*pSocket)->acceptedSocketFD, (const char *)isWon, sizeof(*isWon), 0) == SOCKET_ERROR || 
@@ -109,4 +108,35 @@ boolean sendAndRecv(struct AcceptedClient **pSocket, boolean *isLost, boolean *i
     }
 
     return TRUE;
+}
+
+void checkIfCharacterIsInWord(struct WordElement word[], char received_character, unsigned char *remaining_hp) {
+    boolean isGuessed = FALSE;
+    for (int i = 0; i < 5; i++) {
+        if (word[i].character == received_character || word[i].character == received_character - 32) {
+            word[i].isGuessed = TRUE;
+            isGuessed = TRUE;
+        }
+    }
+
+    if (!isGuessed) --*remaining_hp;
+}
+
+void checkIfWonOrLost(struct WordElement word[], boolean *isLost, boolean *isWon, unsigned char *remaining_hp) {
+    if (*remaining_hp == 0) {
+        *isLost = TRUE;
+        return;
+    }
+
+    boolean allGuessed = TRUE;
+    for (int i = 0; i < 5; i++) {
+        if (!word[i].isGuessed) {
+            allGuessed = FALSE;
+            break;
+        }
+    }
+
+    if (allGuessed)
+        *isWon = TRUE;
+
 }

@@ -1,10 +1,8 @@
 #include "../common/common.h"
 #include "server_functions.h"
 
-#define MAX_PLAYERS 10 // !Not more than 255!
-
-unsigned short won_games = 25;
-unsigned short lost_games = 14;
+unsigned short won_games = 0;
+unsigned short lost_games = 0;
 
 struct AcceptedClient acceptedSockets[MAX_PLAYERS];
 unsigned char acceptedSocketsCount = 0;
@@ -45,14 +43,14 @@ DWORD WINAPI gameLoop(LPVOID lpParam) {
     printf("Client connected.\n");
 
     struct AcceptedClient *pSocket = (struct AcceptedClient *)lpParam;
-    //TODO: Select random word
-    struct WordElement word[5] = {{'H', FALSE}, {'E', FALSE}, {'L', FALSE}, {'L', FALSE}, {'O', FALSE}};
 
     boolean isLost = FALSE;
     boolean isWon = FALSE;
-    unsigned char remaining_hp = 3;
-    
+    unsigned char remaining_hp = MAX_HP;
     char received_character;
+    struct WordElement word[WORD_LENGTH];
+    
+    initWord(word);
 
     while (1) {
         if (!sendAndRecv(&pSocket, &isLost, &isWon, word, &remaining_hp, &received_character))

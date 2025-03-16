@@ -8,6 +8,10 @@
 #include <malloc.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
+
+#define MAX_WORDS 200
+#define WORD_LENGTH 5
 
 struct AcceptedClient 
 {
@@ -63,6 +67,37 @@ struct AcceptedClient * acceptIncomingConnection(int serverSocketFD) {
         acceptedClient->error = clientSocketFD;
 
     return acceptedClient;
+}
+
+void initWord(struct WordElement word[]) {
+    srand(time(0));
+
+    FILE *file = fopen("words.bin", "r");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    char words[MAX_WORDS][WORD_LENGTH + 1];
+    int count = 0;
+
+    while (count < MAX_WORDS && fscanf(file, "%5s", words[count]) == 1) {
+        count++;
+    }
+    fclose(file);
+
+    if (count < MAX_WORDS) {
+        printf("Warning: Only %d words found in file.\n", count);
+    }
+
+    int wordIndex = rand() % count;
+
+    printf("Selected Word %d: %s\n", wordIndex + 1, words[wordIndex]);
+
+    for (int i = 0; i < WORD_LENGTH; i++) {
+        word[i].character = words[wordIndex][i];
+        word[i].isGuessed = 0;
+    }
 }
 
 void wordToString(struct WordElement word[], char *wordString) {
@@ -125,6 +160,7 @@ void checkIfCharacterIsInWord(struct WordElement word[], char received_character
 void checkIfWonOrLost(struct WordElement word[], boolean *isLost, boolean *isWon, unsigned char *remaining_hp) {
     if (*remaining_hp == 0) {
         *isLost = TRUE;
+        ++lost_games;
         return;
     }
 
@@ -136,7 +172,8 @@ void checkIfWonOrLost(struct WordElement word[], boolean *isLost, boolean *isWon
         }
     }
 
-    if (allGuessed)
+    if (allGuessed) {
         *isWon = TRUE;
-
+        ++won_games;
+    }
 }
